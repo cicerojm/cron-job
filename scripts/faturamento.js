@@ -1,6 +1,7 @@
 // scripts/faturamento.js
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
+//require('dotenv').config();
 
 
 const empresas = [
@@ -83,14 +84,20 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
   // Grava no Supabase
   const agora = new Date().toISOString();
+  let total = 0
   for (const r of resultados) {
-    const res = await supabase.from('faturamento_atual').upsert({
+    total += r.revenue
+    await supabase.from('faturamento_atual').upsert({
       id: r.nome,
       valor: r.revenue,
       created_at: agora
      });
-     console.log("res: ",res)
   }
+  await supabase.from('faturamento_atual').upsert({
+      id: 'total',
+      valor: total,
+      created_at: agora
+     });
 
   console.log('Faturamento registrado:', resultados);
 })();
