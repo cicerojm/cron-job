@@ -1,0 +1,33 @@
+name: Faturamento Cron
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:  # Permite execução manual
+
+jobs:
+  faturamento:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v3
+
+    - name: Instalar Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Instalar dependências
+      run: npm ci
+
+    - name: Rodar script de faturamento
+      run: node scripts/faturamento.js
+
+    - name: Commitar resultado no repositório (opcional)
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'actions@github.com'
+        git add .
+        git commit -m "Atualiza dados de faturamento [skip ci]" || echo "Sem alterações"
+        git push
