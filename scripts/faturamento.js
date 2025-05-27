@@ -1,7 +1,6 @@
 // scripts/faturamento.js
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
 
 
 const empresas = [
