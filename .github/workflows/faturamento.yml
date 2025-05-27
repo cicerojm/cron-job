@@ -22,6 +22,11 @@ jobs:
       run: npm ci
 
     - name: Rodar script de faturamento
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        user: ${{ secrets.user }}
+        password: ${{ secrets.password }}
       run: node scripts/faturamento.js
 
     - name: Commitar resultado no repositório (opcional)
