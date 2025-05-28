@@ -61,7 +61,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
         const dados = await page.evaluate(() => {
             const parse = (id) => {
             const el = document.querySelector(`#contentBody_lblVTotAut${id}`);
-            if (!el) return null;
+            if (!el) return 0;
             return parseFloat(el.innerText.replace(/[^\d,]/g, '').replace(',', '.'));
             };
             return {
