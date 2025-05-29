@@ -17,7 +17,7 @@ const senha = process.env.password;
 async function extrairFaturamento(page, selector) {
   return await page.evaluate((sel) => {
     const el = document.querySelector(sel);
-    if (!el) return null;
+    if (!el) return 0;
     const texto = el.innerText.replace(/[^\d,]/g, '').replace(',', '.');
     return parseFloat(texto);
   }, selector);
@@ -43,7 +43,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
     if (!empresa.precisaSelecionarEmpresa) {
         await page.waitForNavigation({ waitUntil: 'networkidle2' });
         await page.goto(`${baseUrl}/movcentral/saidas`, { waitUntil: 'networkidle2' });
-        await page.waitForSelector('#contentBody_lblVTotAut1', { timeout: 15000 });
+        await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 15000 });
 
         const faturamento = await extrairFaturamento(page, '#contentBody_lblVTotAut1');
         resultados.push({ nome: empresa.nome_empresa, revenue: faturamento });
@@ -56,7 +56,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
         });
         await page.waitForNavigation({ waitUntil: 'networkidle2' });
         await page.goto(`${baseUrl}/movcentral/saidas`, { waitUntil: 'networkidle2' });
-        await page.waitForSelector('#contentBody_lblVTotAut1', { timeout: 15000 });
+        await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 15000 });
         
         const dados = await page.evaluate(() => {
             const parse = (id) => {
