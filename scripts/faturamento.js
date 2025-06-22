@@ -5,10 +5,11 @@ const { createClient } = require('@supabase/supabase-js');
 
 
 const empresas = [
-  { nome: 'gpc_estacazero', precisaSelecionarEmpresa: false, nome_empresa: 'estaca_zero' },
-  { nome: 'gpc_bacabal', precisaSelecionarEmpresa: false, nome_empresa: 'padin_bacabal' },
-  { nome: 'gpc_caxias', precisaSelecionarEmpresa: false, nome_empresa: 'padin_caxias' },
-  { nome: 'grupopadrecicero', precisaSelecionarEmpresa: true, nome_empresa: 'grupo_padre_cicero' },
+  { nome: 'gpc_estacazero', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'estaca_zero' },
+  { nome: 'gpc_bacabal', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_bacabal' },
+  { nome: 'gpc_caxias', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_caxias' },
+  { nome: 'ghpc_caxias1', regiao: 'sp02', precisaSelecionarEmpresa: false, nome_empresa: 'caxias' },
+  { nome: 'grupopadrecicero', regiao: 'nordeste01', precisaSelecionarEmpresa: true, nome_empresa: 'grupo_padre_cicero' },
 ];
 
 const usuario = process.env.user;
@@ -34,7 +35,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
   const resultados = [];
 
   for (const empresa of empresas) {
-    const baseUrl = `https://nordeste01.retaguarda.app/${empresa.nome}`;
+    const baseUrl = `https://${empresa.regiao}.retaguarda.app/${empresa.nome}`;
     await page.goto(`${baseUrl}/login`, { waitUntil: 'networkidle2' });
     await page.type('#txtLogin', usuario);
     await page.type('#txtSenha', senha);
@@ -67,7 +68,6 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
             return {
             peritoro: parse(1),
             acailandia: parse(2),
-            caxias: parse(6),
             santa_maria: parse(7),
             sobral: parse(8),
             buriticupu: parse(11)
