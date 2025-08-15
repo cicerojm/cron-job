@@ -3,7 +3,6 @@ const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
 //require('dotenv').config();
 
-
 const empresas = [
   { nome: 'gpc_estacazero', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'estaca_zero' },
   { nome: 'gpc_bacabal', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_bacabal' },
