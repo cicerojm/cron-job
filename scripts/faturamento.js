@@ -48,7 +48,8 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
         await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 15000 });
 
         const faturamento = await extrairFaturamento(page, '#contentBody_lblVTotAut1');
-        resultados.push({ nome: empresa.nome_empresa, revenue: faturamento });
+        const vendas = await extrairFaturamento(page, '#contentBody_lblQtdMovAut1');
+        resultados.push({ nome: empresa.nome_empresa, revenue: faturamento, sales: vendas });
     } else {
         // grupopadrecicero (com seleção de lojas)
         await page.waitForSelector('input[id^="lvLojas_btnSelLoja_0"]', { timeout: 10000 });
@@ -61,22 +62,26 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
         await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 15000 });
         
         const dados = await page.evaluate(() => {
-            const parse = (id) => {
-            const el = document.querySelector(`#contentBody_lblVTotAut${id}`);
-            if (!el) return 0;
-            return parseFloat(el.innerText.replace(/[^\d,]/g, '').replace(',', '.'));
+            const parseNumber = (selector) => {
+                const el = document.querySelector(selector);
+                if (!el) return 0;
+                return parseFloat(el.innerText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
             };
+            const parse = (id) => ({
+                revenue: parseNumber(`#contentBody_lblVTotAut${id}`),
+                sales: parseNumber(`#contentBody_lblQtdMovAut${id}`)
+            });
             return {
-            peritoro: parse(1),
-            acailandia: parse(2),
-            santa_maria: parse(7),
-            sobral: parse(8),
-            buriticupu: parse(11)
+                peritoro: parse(1),
+                acailandia: parse(2),
+                santa_maria: parse(7),
+                sobral: parse(8),
+                buriticupu: parse(11)
             };
         });
 
-        for (const [nome, revenue] of Object.entries(dados)) {
-            resultados.push({ nome, revenue });
+        for (const [nome, valores] of Object.entries(dados)) {
+            resultados.push({ nome, revenue: valores.revenue, sales: valores.sales });
         }
     }
   }
@@ -86,17 +91,21 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
   // Grava no Supabase
   const agora = new Date().toISOString();
   let total = 0
+  let total_vendas = 0
   for (const r of resultados) {
     total += r.revenue
+    total_vendas += r.sales
     await supabase.from('faturamento_atual').upsert({
       id: r.nome,
       valor: r.revenue,
+      num_vendas: r.sales,
       created_at: agora
      });
   }
   await supabase.from('faturamento_atual').upsert({
       id: 'total',
       valor: total,
+      num_vendas: total_vendas,
       created_at: agora
      });
 
