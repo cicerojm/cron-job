@@ -21,7 +21,7 @@ async function extrairFaturamento(page, selector) {
     const el = document.querySelector(sel);
     if (!el) return 0;
     const texto = el.innerText.replace(/[^\d,]/g, '').replace(',', '.');
-    return parseFloat(texto);
+    return parseFloat(texto) || 0;
   }, selector);
 }
 
@@ -29,85 +29,124 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
 (async () => {
   const browser = await puppeteer.launch({
-  args: ['--no-sandbox', '--disable-setuid-sandbox']
-});
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
   const page = await browser.newPage();
 
   const resultados = [];
 
   for (const empresa of empresas) {
     const baseUrl = `https://${empresa.regiao}.retaguarda.app/${empresa.nome}`;
+
     await page.goto(`${baseUrl}/login`, { waitUntil: 'networkidle2' });
     await page.type('#txtLogin', usuario);
     await page.type('#txtSenha', senha);
     await page.click('#btnLogin');
 
     if (!empresa.precisaSelecionarEmpresa) {
-        await page.waitForNavigation({ waitUntil: 'networkidle2' });
-        await page.goto(`${baseUrl}/movcentral/saidas`, { waitUntil: 'networkidle2' });
-        await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 15000 });
+      await page.waitForNavigation({ waitUntil: 'networkidle2' });
+      await page.goto(`${baseUrl}/movcentral/saidas`, { waitUntil: 'networkidle2' });
+      await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 15000 });
 
-        const faturamento = await extrairFaturamento(page, '#contentBody_lblVTotAut1');
-        const vendas = await extrairFaturamento(page, '#contentBody_lblQtdMovAut1');
-        resultados.push({ nome: empresa.nome_empresa, revenue: faturamento, sales: vendas });
+      const faturamento = await extrairFaturamento(page, '#contentBody_lblVTotAut1');
+      const vendas = await extrairFaturamento(page, '#contentBody_lblQtdMovAut1');
+      resultados.push({ nome: empresa.nome_empresa, revenue: faturamento, sales: vendas });
     } else {
-        // grupopadrecicero (com seleção de lojas)
-        await page.waitForSelector('input[id^="lvLojas_btnSelLoja_0"]', { timeout: 10000 });
-        await page.evaluate(() => {
-            const botao = document.querySelector('input[id^="lvLojas_btnSelLoja_0"]');
-            if (botao) botao.click();
-        });
-        await page.waitForNavigation({ waitUntil: 'networkidle2' });
-        await page.goto(`${baseUrl}/movcentral/saidas`, { waitUntil: 'networkidle2' });
-        await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 15000 });
-        
-        const dados = await page.evaluate(() => {
-            const parseNumber = (selector) => {
-                const el = document.querySelector(selector);
-                if (!el) return 0;
-                return parseFloat(el.innerText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-            };
-            const parse = (id) => ({
-                revenue: parseNumber(`#contentBody_lblVTotAut${id}`),
-                sales: parseNumber(`#contentBody_lblQtdMovAut${id}`)
-            });
-            return {
-                peritoro: parse(1),
-                acailandia: parse(2),
-                santa_maria: parse(7),
-                sobral: parse(8),
-                buriticupu: parse(11)
-            };
-        });
+      // grupopadrecicero (com seleção de lojas)
+      await page.waitForSelector('input[id^="lvLojas_btnSelLoja_0"]', { timeout: 10000 });
+      await page.evaluate(() => {
+        const botao = document.querySelector('input[id^="lvLojas_btnSelLoja_0"]');
+        if (botao) botao.click();
+      });
+      await page.waitForNavigation({ waitUntil: 'networkidle2' });
+      await page.goto(`${baseUrl}/movcentral/saidas`, { waitUntil: 'networkidle2' });
+      await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 15000 });
 
-        for (const [nome, valores] of Object.entries(dados)) {
-            resultados.push({ nome, revenue: valores.revenue, sales: valores.sales });
-        }
+      const dados = await page.evaluate(() => {
+        const parseNumber = (selector) => {
+          const el = document.querySelector(selector);
+          if (!el) return 0;
+          return parseFloat(el.innerText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+        };
+        const parse = (id) => ({
+          revenue: parseNumber(`#contentBody_lblVTotAut${id}`),
+          sales: parseNumber(`#contentBody_lblQtdMovAut${id}`)
+        });
+        return {
+          peritoro: parse(1),
+          acailandia: parse(2),
+          santa_maria: parse(7),
+          sobral: parse(8),
+          buriticupu: parse(11)
+        };
+      });
+
+      for (const [nome, valores] of Object.entries(dados)) {
+        resultados.push({ nome, revenue: valores.revenue, sales: valores.sales });
+      }
     }
+
+    // desloga antes de ir para a próxima empresa (se precisar)
+    // opcional: await page.goto(`${baseUrl}/logout`, { waitUntil: 'networkidle2' });
   }
 
   await browser.close();
 
-  // Grava no Supabase
+  // === Grava no Supabase ===
   const agora = new Date().toISOString();
-  let total = 0
-  let total_vendas = 0
+  const hoje = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD' (data de referência do faturamento)
+
+  let total = 0;
+  let total_vendas = 0;
+
   for (const r of resultados) {
-    total += r.revenue
-    total_vendas += r.sales
+    total += r.revenue;
+    total_vendas += r.sales;
+
+    // 1) Painel em tempo real (como já fazia)
     await supabase.from('faturamento_atual').upsert({
       id: r.nome,
       valor: r.revenue,
       num_vendas: r.sales,
       created_at: agora
-     });
+    });
+
+    // 2) Histórico diário
+    await supabase.from('faturamento_diario').upsert(
+      {
+        filial: r.nome,
+        data: hoje,
+        valor: r.revenue,
+        num_vendas: r.sales,
+        updated_at: agora
+      },
+      {
+        onConflict: 'filial,data' // precisa bater com o índice único criado
+      }
+    );
   }
+
+  // total em tempo real
   await supabase.from('faturamento_atual').upsert({
-      id: 'total',
+    id: 'total',
+    valor: total,
+    num_vendas: total_vendas,
+    created_at: agora
+  });
+
+  // total diário (opcional, mas eu já deixo aqui)
+  await supabase.from('faturamento_diario').upsert(
+    {
+      filial: 'total',
+      data: hoje,
       valor: total,
       num_vendas: total_vendas,
-      created_at: agora
-     });
+      updated_at: agora
+    },
+    {
+      onConflict: 'filial,data'
+    }
+  );
 
-  console.log('Faturamento registrado:', resultados);
+  console.log('Faturamento registrado (atual e diário):', resultados);
 })();
