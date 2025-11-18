@@ -94,8 +94,16 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
   // === Grava no Supabase ===
   const agora = new Date().toISOString();
-  // Usa fuso horário local para evitar problemas de UTC (ex: 3h da manhã no Brasil não vira o dia seguinte)
-  const hojeObj = new Date();
+  // Converte para fuso horário do Brasil (UTC-3) para evitar problemas quando roda no GitHub Actions (UTC)
+  const getDataBrasil = () => {
+    const agora = new Date();
+    // Brasil está em UTC-3, então subtrai 3 horas
+    const offsetBrasil = -3 * 60; // -3 horas em minutos
+    const utc = agora.getTime() + (agora.getTimezoneOffset() * 60000);
+    const dataBrasil = new Date(utc + (offsetBrasil * 60000));
+    return dataBrasil;
+  };
+  const hojeObj = getDataBrasil();
   const hoje = `${hojeObj.getFullYear()}-${String(hojeObj.getMonth() + 1).padStart(2, '0')}-${String(hojeObj.getDate()).padStart(2, '0')}`;
 
   let total = 0;

@@ -24,24 +24,36 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
+// Função para converter data para fuso horário do Brasil (UTC-3)
+// Necessário quando roda no GitHub Actions que usa UTC
+function getDataBrasil(data = new Date()) {
+  // Brasil está em UTC-3
+  const offsetBrasil = -3 * 60; // -3 horas em minutos
+  const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
+  const dataBrasil = new Date(utc + (offsetBrasil * 60000));
+  return dataBrasil;
+}
+
 // Função para formatar data no formato YYYY-MM-DD (para o banco)
-// Usa fuso horário local para evitar problemas de UTC
+// Usa fuso horário do Brasil para evitar problemas de UTC
 function formatarDataISO(data) {
-  const ano = data.getFullYear();
-  const mes = String(data.getMonth() + 1).padStart(2, '0');
-  const dia = String(data.getDate()).padStart(2, '0');
+  const dataBrasil = getDataBrasil(data);
+  const ano = dataBrasil.getFullYear();
+  const mes = String(dataBrasil.getMonth() + 1).padStart(2, '0');
+  const dia = String(dataBrasil.getDate()).padStart(2, '0');
   return `${ano}-${mes}-${dia}`;
 }
 
 // Função para gerar array dos últimos 90 dias
 function gerarUltimos90Dias() {
   const dias = [];
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
+  // Usa fuso horário do Brasil
+  const hojeBrasil = getDataBrasil();
+  hojeBrasil.setHours(0, 0, 0, 0);
   
   for (let i = 0; i < 18; i++) {
-    const data = new Date(hoje);
-    data.setDate(hoje.getDate() - i);
+    const data = new Date(hojeBrasil);
+    data.setDate(hojeBrasil.getDate() - i);
     dias.push(data);
   }
   
