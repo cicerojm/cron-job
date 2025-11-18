@@ -94,7 +94,9 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
   // === Grava no Supabase ===
   const agora = new Date().toISOString();
-  const hoje = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD' (data de referência do faturamento)
+  // Usa fuso horário local para evitar problemas de UTC (ex: 3h da manhã no Brasil não vira o dia seguinte)
+  const hojeObj = new Date();
+  const hoje = `${hojeObj.getFullYear()}-${String(hojeObj.getMonth() + 1).padStart(2, '0')}-${String(hojeObj.getDate()).padStart(2, '0')}`;
 
   let total = 0;
   let total_vendas = 0;
