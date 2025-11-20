@@ -18,6 +18,7 @@
   "homepage": "https://github.com/cicerojm/cron-job#readme",
   "dependencies": {
     "@supabase/supabase-js": "^2.49.8",
+    "dotenv": "^16.4.5",
     "puppeteer": "^24.9.0"
   }
 }

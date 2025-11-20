@@ -1,0 +1,33 @@
+name: Faturamento Histórico
+
+on:
+  schedule:
+    # Roda a cada 5 horas (00:00, 05:00, 10:00, 15:00, 20:00 UTC)
+    - cron: '0 */5 * * *'
+  workflow_dispatch: # Permite executar manualmente
+
+jobs:
+  executar-faturamento-historico:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar script de faturamento histórico
+        env:
+          user: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/faturamento_historico.js
+

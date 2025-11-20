@@ -1,16 +1,16 @@
 // scripts/faturamento_historico.js
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
+//require('dotenv').config();
 
 const empresas = [
   { nome: 'grupopadrecicero', regiao: 'sp01', precisaSelecionarEmpresa: true, nome_empresa: 'grupo_padre_cicero' },
-  //{ nome: 'gpc_estacazero', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'estaca_zero' },
-  //{ nome: 'gpc_bacabal', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_bacabal' },
-  //{ nome: 'gpc_caxias', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_caxias' },
-  //{ nome: 'ghpc_caxias1', regiao: 'sp02', precisaSelecionarEmpresa: false, nome_empresa: 'caxias' },
-  //{ nome: 'grpc_campomaior', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'campo_maior' },
-  //{ nome: 'grupohrpc', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'box' },
+  { nome: 'gpc_estacazero', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'estaca_zero' },
+  { nome: 'gpc_bacabal', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_bacabal' },
+  { nome: 'gpc_caxias', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_caxias' },
+  { nome: 'ghpc_caxias1', regiao: 'sp02', precisaSelecionarEmpresa: false, nome_empresa: 'caxias' },
+  { nome: 'grpc_campomaior', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'campo_maior' },
+  { nome: 'grupohrpc', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'box' },
 ];
 
 const usuario = process.env.user;
@@ -45,13 +45,13 @@ function formatarDataISO(data) {
 }
 
 // Função para gerar array dos últimos 90 dias
-function gerarUltimos90Dias() {
+function gerarUltimos5Dias() {
   const dias = [];
   // Usa fuso horário do Brasil
   const hojeBrasil = getDataBrasil();
   hojeBrasil.setHours(0, 0, 0, 0);
   
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 5; i++) {
     const data = new Date(hojeBrasil);
     data.setDate(hojeBrasil.getDate() - i);
     dias.push(data);
@@ -82,7 +82,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
   });
   const page = await browser.newPage();
 
-  const dias = gerarUltimos90Dias();
+  const dias = gerarUltimos5Dias();
   const agora = new Date().toISOString();
   
   console.log(`Iniciando extração de faturamento histórico para os últimos ${dias.length} dias...`);
@@ -120,7 +120,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
       const dataFormatada = formatarData(data);
       const dataISO = formatarDataISO(data);
       
-      console.log(`  Processando dia ${i + 1}/90: ${dataFormatada}`);
+      console.log(`  Processando dia ${i + 1}/${dias.length}: ${dataFormatada}`);
 
       try {
         // Preencher campos de data (inputs type="date" esperam formato YYYY-MM-DD)
