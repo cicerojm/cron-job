@@ -234,37 +234,6 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
   await browser.close();
 
-  // Calcular totais por dia
-  console.log('\nCalculando totais por dia...');
-  for (const data of dias) {
-    const dataISO = formatarDataISO(data);
-    
-    // Buscar todos os registros do dia (exceto 'total')
-    const { data: registros, error } = await supabase
-      .from('faturamento_diario')
-      .select('valor, num_vendas')
-      .eq('data', dataISO)
-      .neq('filial', 'total');
-
-    if (!error && registros && registros.length > 0) {
-      const total = registros.reduce((acc, r) => acc + (r.valor || 0), 0);
-      const total_vendas = registros.reduce((acc, r) => acc + (r.num_vendas || 0), 0);
-
-      await supabase.from('faturamento_diario').upsert(
-        {
-          filial: 'total',
-          data: dataISO,
-          valor: total,
-          num_vendas: total_vendas,
-          updated_at: agora
-        },
-        {
-          onConflict: 'filial,data'
-        }
-      );
-    }
-  }
-
   console.log('\n✓ Extração histórica concluída!');
 })();
 
