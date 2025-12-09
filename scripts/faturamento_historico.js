@@ -148,7 +148,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
           }
         }, dataISO);
         
-        await delay(500); // Pequeno delay após preencher as datas
+        await delay(1000); // Pequeno delay após preencher as datas
 
         // Clicar no botão de atualizar e aguardar carregamento
         await page.waitForSelector('#contentBody_btnAtualizarMovimento', { timeout: 30000 });
@@ -159,7 +159,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
           page.click('#contentBody_btnAtualizarMovimento')
         ]);
         
-        await delay(2000); // Aguardar um pouco mais para garantir que os dados foram carregados
+        await delay(3000); // Aguardar um pouco mais para garantir que os dados foram carregados
 
         if (!empresa.precisaSelecionarEmpresa) {
           // Empresas simples (uma única loja)
@@ -226,7 +226,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
       }
 
       // Pequeno delay entre requisições para não sobrecarregar o servidor
-      await delay(1000);
+      await delay(2000);
     }
 
     console.log(`✓ Concluído para ${empresa.nome_empresa}`);
