@@ -74,6 +74,59 @@ async function extrairFaturamento(page, selector) {
   }, selector);
 }
 
+// Função para verificar e atualizar faturamento apenas se o novo valor for maior
+async function atualizarFaturamentoSeMaior(filial, dataISO, novoValor, numVendas, agora) {
+  // Buscar registro existente
+  const { data: registroExistente, error: errorBusca } = await supabase
+    .from('faturamento_diario')
+    .select('valor')
+    .eq('filial', filial)
+    .eq('data', dataISO)
+    .single();
+
+  // Se não existe registro ou se o novo valor é maior, atualiza
+  if (errorBusca && errorBusca.code === 'PGRST116') {
+    // Registro não existe, pode inserir
+    const { error } = await supabase.from('faturamento_diario').upsert(
+      {
+        filial: filial,
+        data: dataISO,
+        valor: novoValor,
+        num_vendas: numVendas,
+        updated_at: agora
+      },
+      {
+        onConflict: 'filial,data'
+      }
+    );
+    return { atualizado: true, error };
+  } else if (registroExistente) {
+    // Registro existe, verifica se o novo valor é maior
+    if (novoValor > registroExistente.valor) {
+      const { error } = await supabase.from('faturamento_diario').upsert(
+        {
+          filial: filial,
+          data: dataISO,
+          valor: novoValor,
+          num_vendas: numVendas,
+          updated_at: agora
+        },
+        {
+          onConflict: 'filial,data'
+        }
+      );
+      return { atualizado: true, error };
+    }
+    else {
+      // Novo valor é menor, não atualiza
+      return { atualizado: false, error: null };
+    }
+  } else {
+    // Erro na busca (diferente de "não encontrado")
+    return { atualizado: false, error: errorBusca };
+  }
+}
+
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 (async () => {
@@ -167,19 +220,21 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
           const vendas = await extrairFaturamento(page, '#contentBody_lblQtdMovAut1');
 
           if (faturamento > 0 || vendas > 0) {
-            await supabase.from('faturamento_diario').upsert(
-              {
-                filial: empresa.nome_empresa,
-                data: dataISO,
-                valor: faturamento,
-                num_vendas: vendas,
-                updated_at: agora
-              },
-              {
-                onConflict: 'filial,data'
-              }
+            const resultado = await atualizarFaturamentoSeMaior(
+              empresa.nome_empresa,
+              dataISO,
+              faturamento,
+              vendas,
+              agora
             );
-            console.log(`    ✓ ${empresa.nome_empresa}: R$ ${faturamento.toFixed(2)} | ${vendas} vendas`);
+            
+            if (resultado.atualizado) {
+              console.log(`    ✓ ${empresa.nome_empresa}: R$ ${faturamento.toFixed(2)} | ${vendas} vendas`);
+            } else if (resultado.error) {
+              console.error(`    ✗ Erro ao atualizar ${empresa.nome_empresa}:`, resultado.error.message);
+            } else {
+              console.log(`    ⊘ ${empresa.nome_empresa}: Valor menor igual que o existente, mantido anterior`);
+            }
           }
         } else {
           // grupopadrecicero (múltiplas lojas)
@@ -204,19 +259,21 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
           for (const [nome, valores] of Object.entries(dados)) {
             if (valores.revenue > 0 || valores.sales > 0) {
-              await supabase.from('faturamento_diario').upsert(
-                {
-                  filial: nome,
-                  data: dataISO,
-                  valor: valores.revenue,
-                  num_vendas: valores.sales,
-                  updated_at: agora
-                },
-                {
-                  onConflict: 'filial,data'
-                }
+              const resultado = await atualizarFaturamentoSeMaior(
+                nome,
+                dataISO,
+                valores.revenue,
+                valores.sales,
+                agora
               );
-              console.log(`    ✓ ${nome}: R$ ${valores.revenue.toFixed(2)} | ${valores.sales} vendas`);
+              
+              if (resultado.atualizado) {
+                console.log(`    ✓ ${nome}: R$ ${valores.revenue.toFixed(2)} | ${valores.sales} vendas`);
+              } else if (resultado.error) {
+                console.error(`    ✗ Erro ao atualizar ${nome}:`, resultado.error.message);
+              } else {
+                console.log(`    ⊘ ${nome}: Valor menor que o existente, mantido anterior`);
+              }
             }
           }
         }
