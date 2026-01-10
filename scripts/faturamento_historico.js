@@ -11,7 +11,7 @@ const empresas = [
   { nome: 'ghpc_caxias1', regiao: 'sp02', precisaSelecionarEmpresa: false, nome_empresa: 'caxias' },
   { nome: 'grpc_campomaior', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'campo_maior' },
   //{ nome: 'grupohrpc', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'box' },
-  { nome: 'grpcgurupi', regiao: 'sp01', precisaSelecionarEmpresa: true, nome_empresa: 'gurupi' },
+  { nome: 'grpcgurupi', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'gurupi' },
 ];
 
 const usuario = process.env.user;
