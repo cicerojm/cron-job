@@ -145,19 +145,5 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
     created_at: agora
   });
 
-  // total diário (opcional, mas eu já deixo aqui)
-  await supabase.from('faturamento_diario').upsert(
-    {
-      filial: 'total',
-      data: hoje,
-      valor: total,
-      num_vendas: total_vendas,
-      updated_at: agora
-    },
-    {
-      onConflict: 'filial,data'
-    }
-  );
-
   console.log('Faturamento registrado (atual e diário):', resultados);
 })();
