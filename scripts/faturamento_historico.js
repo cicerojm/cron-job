@@ -46,13 +46,13 @@ function formatarDataISO(data) {
 }
 
 // Função para gerar array dos últimos 90 dias
-function gerarUltimos5Dias() {
+function gerarUltimos2Dias() {
   const dias = [];
   // Usa fuso horário do Brasil
   const hojeBrasil = getDataBrasil();
   hojeBrasil.setHours(0, 0, 0, 0);
   
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 2; i++) {
     const data = new Date(hojeBrasil);
     data.setDate(hojeBrasil.getDate() - i);
     dias.push(data);
@@ -136,7 +136,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
   });
   const page = await browser.newPage();
 
-  const dias = gerarUltimos5Dias();
+  const dias = gerarUltimos2Dias();
   const agora = new Date().toISOString();
   
   console.log(`Iniciando extração de faturamento histórico para os últimos ${dias.length} dias...`);
