@@ -1,9 +1,9 @@
 name: Faturamento Histórico
 
 on:
-  schedule:
+  #schedule:
     # Roda a cada 5 horas (00:00, 05:00, 10:00, 15:00, 20:00 UTC)
-    - cron: '0 */5 * * *'
+    #- cron: '0 */5 * * *'
   workflow_dispatch: # Permite executar manualmente
 
 jobs:
