@@ -3,6 +3,7 @@ name: Faturamento Cron
 on:
   schedule:
     - cron: '*/5 * * * *'
+    - cron: '55 * * * *'
   workflow_dispatch:  # Permite execução manual
 
 jobs:
