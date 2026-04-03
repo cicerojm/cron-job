@@ -4,7 +4,7 @@ const { createClient } = require('@supabase/supabase-js');
 //require('dotenv').config();
 
 const empresas = [
-  //{ nome: 'grupopadrecicero', regiao: 'sp01', precisaSelecionarEmpresa: true, nome_empresa: 'grupo_padre_cicero' },
+  { nome: 'grupopadrecicero', regiao: 'sp01', precisaSelecionarEmpresa: true, nome_empresa: 'grupo_padre_cicero' },
   { nome: 'gpc_estacazero', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'estaca_zero' },
   { nome: 'gpc_bacabal', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_bacabal' },
   { nome: 'gpc_caxias', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_caxias' },
@@ -52,7 +52,7 @@ function gerarUltimos2Dias() {
   const hojeBrasil = getDataBrasil();
   hojeBrasil.setHours(0, 0, 0, 0);
   
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < 3; i++) {
     const data = new Date(hojeBrasil);
     data.setDate(hojeBrasil.getDate() - i);
     dias.push(data);
