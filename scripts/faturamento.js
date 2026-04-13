@@ -38,7 +38,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
   for (const empresa of empresas) {
     const baseUrl = `https://${empresa.regiao}.retaguarda.app/${empresa.nome}`;
-
+  console.log('empresa: ',empresa.nome);
     await page.goto(`${baseUrl}/login`, { waitUntil: 'networkidle2' });
     await page.type('#txtLogin', usuario);
     await page.type('#txtSenha', senha);
