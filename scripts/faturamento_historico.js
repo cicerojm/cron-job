@@ -10,7 +10,7 @@ const empresas = [
   { nome: 'gpc_caxias', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_caxias' },
   { nome: 'ghpc_caxias1', regiao: 'sp02', precisaSelecionarEmpresa: false, nome_empresa: 'caxias' },
   { nome: 'grpc_campomaior', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'campo_maior' },
-  //{ nome: 'grupohrpc', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'box' },
+  { nome: 'cometajaragua', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'jaragua' },
   { nome: 'grpcgurupi', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'gurupi' },
 ];
 
