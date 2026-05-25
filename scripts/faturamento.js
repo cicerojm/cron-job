@@ -17,6 +17,11 @@ const empresas = [
 const usuario = process.env.user;
 const senha = process.env.password;
 
+async function limparSessao(page) {
+  const cookies = await page.cookies();
+  if (cookies.length) await page.deleteCookie(...cookies);
+}
+
 async function extrairFaturamento(page, selector) {
   return await page.evaluate((sel) => {
     const el = document.querySelector(sel);
@@ -33,35 +38,46 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
+  page.setDefaultNavigationTimeout(60000);
 
   const resultados = [];
 
   for (const empresa of empresas) {
     const baseUrl = `https://${empresa.regiao}.retaguarda.app/${empresa.nome}`;
-  console.log('empresa: ',empresa.nome);
-    await page.goto(`${baseUrl}/login`, { waitUntil: 'networkidle2' });
-    await page.type('#txtLogin', usuario);
-    await page.type('#txtSenha', senha);
+    console.log('empresa: ', empresa.nome);
+
+    await limparSessao(page);
+
+    const loginUrl = `${baseUrl}/login`;
+    try {
+      await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    } catch (err) {
+      throw new Error(`Timeout ao abrir ${loginUrl}: ${err.message}`);
+    }
+    await page.waitForSelector('#txtLogin', { timeout: 15000 });
+    await page.type('#txtLogin', usuario, { delay: 20 });
+    await page.type('#txtSenha', senha, { delay: 20 });
     await page.click('#btnLogin');
 
     if (!empresa.precisaSelecionarEmpresa) {
-      await page.waitForNavigation({ waitUntil: 'networkidle2' });
-      await page.goto(`${baseUrl}/movcentral/saidas`, { waitUntil: 'networkidle2' });
-      await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 15000 });
+      await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 });
+      const saidasUrl = `${baseUrl}/movcentral/saidas`;
+      await page.goto(saidasUrl, { waitUntil: 'load', timeout: 60000 });
+      await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 60000 });
 
       const faturamento = await extrairFaturamento(page, '#contentBody_lblVTotAut1');
       const vendas = await extrairFaturamento(page, '#contentBody_lblQtdMovAut1');
       resultados.push({ nome: empresa.nome_empresa, revenue: faturamento, sales: vendas });
     } else {
       // grupopadrecicero (com seleção de lojas)
-      await page.waitForSelector('input[id^="lvLojas_btnSelLoja_0"]', { timeout: 10000 });
+      await page.waitForSelector('input[id^="lvLojas_btnSelLoja_0"]', { timeout: 60000 });
       await page.evaluate(() => {
         const botao = document.querySelector('input[id^="lvLojas_btnSelLoja_0"]');
         if (botao) botao.click();
       });
-      await page.waitForNavigation({ waitUntil: 'networkidle2' });
-      await page.goto(`${baseUrl}/movcentral/saidas`, { waitUntil: 'networkidle2' });
-      await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 15000 });
+      await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.goto(`${baseUrl}/movcentral/saidas`, { waitUntil: 'load', timeout: 60000 });
+      await page.waitForSelector('#contentBody_pnlAbaMovimento', { timeout: 60000 });
 
       const dados = await page.evaluate(() => {
         const parseNumber = (selector) => {
