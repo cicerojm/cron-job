@@ -12,7 +12,9 @@ const empresas = [
   { nome: 'cometajaragua', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'jaragua'},
   { nome: 'grupopadrecicero', regiao: 'sp01', precisaSelecionarEmpresa: true, nome_empresa: 'grupo_padre_cicero' },
   { nome: 'grpcgurupi', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'gurupi' },
-   { nome: 'gpc_acailandia', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'acailandia' },
+  { nome: 'gpc_acailandia', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'acailandia' },
+  { nome: 'cometacristinocastro', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'cristino_castro' },
+
 ];
 
 const usuario = process.env.user;
@@ -101,7 +103,6 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
       for (const [nome, valores] of Object.entries(dados)) {
         resultados.push({ nome, revenue: valores.revenue, sales: valores.sales });
       }
-      resultados.push({ nome: 'cristino_castro', revenue: 15524, sales: 408 });
     }
 
     // desloga antes de ir para a próxima empresa (se precisar)
