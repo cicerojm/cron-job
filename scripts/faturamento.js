@@ -101,6 +101,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
       for (const [nome, valores] of Object.entries(dados)) {
         resultados.push({ nome, revenue: valores.revenue, sales: valores.sales });
       }
+      resultados.push({ nome: 'cristino_castro', revenue: 15524, sales: 408 });
     }
 
     // desloga antes de ir para a próxima empresa (se precisar)
