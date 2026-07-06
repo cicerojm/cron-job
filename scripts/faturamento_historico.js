@@ -4,14 +4,16 @@ const { createClient } = require('@supabase/supabase-js');
 //require('dotenv').config();
 
 const empresas = [
-  { nome: 'grupopadrecicero', regiao: 'sp01', precisaSelecionarEmpresa: true, nome_empresa: 'grupo_padre_cicero' },
   { nome: 'gpc_estacazero', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'estaca_zero' },
   { nome: 'gpc_bacabal', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_bacabal' },
   { nome: 'gpc_caxias', regiao: 'nordeste01', precisaSelecionarEmpresa: false, nome_empresa: 'padin_caxias' },
   { nome: 'ghpc_caxias1', regiao: 'sp02', precisaSelecionarEmpresa: false, nome_empresa: 'caxias' },
   { nome: 'grpc_campomaior', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'campo_maior' },
-  { nome: 'cometajaragua', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'jaragua' },
+  { nome: 'cometajaragua', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'jaragua'},
+  { nome: 'grupopadrecicero', regiao: 'sp01', precisaSelecionarEmpresa: true, nome_empresa: 'grupo_padre_cicero' },
   { nome: 'grpcgurupi', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'gurupi' },
+  { nome: 'gpc_acailandia', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'acailandia' },
+  { nome: 'cometacristinocastro', regiao: 'sp01', precisaSelecionarEmpresa: false, nome_empresa: 'cristino_castro' },
 ];
 
 const usuario = process.env.user;
@@ -52,7 +54,7 @@ function gerarUltimos2Dias() {
   const hojeBrasil = getDataBrasil();
   hojeBrasil.setHours(0, 0, 0, 0);
   
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 36; i++) {
     const data = new Date(hojeBrasil);
     data.setDate(hojeBrasil.getDate() - i);
     dias.push(data);
