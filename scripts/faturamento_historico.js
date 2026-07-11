@@ -54,7 +54,7 @@ function gerarUltimos2Dias() {
   const hojeBrasil = getDataBrasil();
   hojeBrasil.setHours(0, 0, 0, 0);
   
-  for (let i = 0; i < 36; i++) {
+  for (let i = 0; i < 2; i++) {
     const data = new Date(hojeBrasil);
     data.setDate(hojeBrasil.getDate() - i);
     dias.push(data);
